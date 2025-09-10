@@ -12,11 +12,11 @@ import { GroupDetailPageComponent } from './group-detail-page/group-detail-page.
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
-  { path: 'user', component: UserHomeComponent, canActivate: [authGuard, userGuard] },
-  { path: 'user-home', component: UserHomeComponent, canActivate: [authGuard, userGuard] },
-  { path: 'group-detail/:id', component: GroupDetailPageComponent, canActivate: [authGuard, userGuard] },
-  { path: 'admin', component: AdminHomeComponent, canActivate: [authGuard, adminGuard] },
-  { path: 'manage-users', component: ManageUsersComponent, canActivate: [authGuard, adminGuard] },
-  { path: 'manage-groups', component: ManageGroupsComponent, canActivate: [authGuard, adminGuard] },
+  { path: 'user', component: UserHomeComponent, },
+  { path: 'user-home', component: UserHomeComponent, },
+  { path: 'group-detail/:id', component: GroupDetailPageComponent, },
+  { path: 'admin', component: AdminHomeComponent,  },
+  { path: 'manage-users', component: ManageUsersComponent,  },
+  { path: 'manage-groups', component: ManageGroupsComponent,  },
 
 ];
