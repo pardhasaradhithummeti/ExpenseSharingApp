@@ -1,0 +1,23 @@
+
+<app-admin-nav></app-admin-nav>
+<div class="manage-users-container">
+  <!-- Top Nav -->
+  
+  <h2>👥 Manage Users</h2>
+
+  <!-- Add User Form -->
+  <form (ngSubmit)="addUser()" class="user-form">
+    <input [(ngModel)]="newUser.username" placeholder="Username" name="username" required />
+    <input [(ngModel)]="newUser.email" placeholder="Email" name="email" type="email" required />
+    <input [(ngModel)]="newUser.password" placeholder="Password" type="password" name="password" required />
+    <button type="submit">➕ Create User</button>
+  </form>
+
+  <!-- User List -->
+  <ul class="user-list">
+    <li *ngFor="let u of users">
+      <span class="user-info">{{ u.username }} — {{ u.email }}</span>
+      <p>{{ u.groups.join(', ') }}</p>
+    </li>
+  </ul>
+</div>

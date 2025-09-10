@@ -1,0 +1,101 @@
+.manage-users-container {
+  max-width: 600px;
+  margin: 2rem auto;
+  background: #ffffff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.manage-users-container h2 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-size: 1.6rem;
+}
+
+/* Form */
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin-bottom: 2rem;
+}
+
+.user-form input {
+  padding: 0.7rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.user-form input:focus {
+  border-color: #4facfe;
+  outline: none;
+  box-shadow: 0 0 6px rgba(79, 172, 254, 0.3);
+}
+
+.user-form button {
+  padding: 0.8rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.user-form button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(79, 172, 254, 0.4);
+}
+
+/* User List */
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.user-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 0.9rem 1rem;
+  border-radius: 0.6rem;
+  margin-bottom: 0.6rem;
+  transition: all 0.3s ease;
+}
+
+.user-list li:hover {
+  background: #eaf6ff;
+}
+
+.user-info {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #444;
+}
+
+/* Delete Button */
+.delete-btn {
+  background: #ff6b6b;
+  border: none;
+  border-radius: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #ff4757;
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(255, 71, 87, 0.4);
+}

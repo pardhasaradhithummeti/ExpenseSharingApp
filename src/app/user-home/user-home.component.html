@@ -1,0 +1,18 @@
+<div class="dashboard">
+  <h1>Welcome, {{ user.username }}</h1>
+
+  <div class="stats-row">
+    <div class="stat-card receive">You should receive <p>₹{{ receive }}</p></div>
+    <div class="stat-card owe">You owe <p>₹{{ owe }}</p></div>
+    <div class="stat-card groups">Your Groups <p>{{ groups.length }}</p></div>
+  </div>
+
+  <h2>Your Groups</h2>
+  <div class="group-list">
+    <div class="group-card" *ngFor="let g of groups">
+      <h3>{{ g.name }}</h3>
+      <p *ngIf="g.memberCount">Members: {{ g.memberCount }}</p>
+      <button (click)="openGroup(g.id)">View</button>
+    </div>
+  </div>
+</div>

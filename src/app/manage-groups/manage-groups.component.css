@@ -1,0 +1,143 @@
+.manage-groups-container {
+  max-width: 650px;
+  margin: 2rem auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+  font-family: "Segoe UI", sans-serif;
+}
+
+.manage-groups-container h2 {
+  text-align: center;
+  margin-bottom: 1.8rem;
+  color: #333;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+/* Form */
+.group-form {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.group-form input {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.group-form input:focus {
+  border-color: #4facfe;
+  outline: none;
+  box-shadow: 0 0 6px rgba(79, 172, 254, 0.3);
+}
+
+/* Group List */
+.group-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 1rem 1.2rem;
+  border-radius: 0.6rem;
+  margin-bottom: 0.8rem;
+  transition: all 0.3s ease;
+}
+
+.group-item:hover {
+  background: #eaf6ff;
+}
+
+.group-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.group-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #222;
+}
+
+.group-desc {
+  font-size: 0.9rem;
+  color: #666;
+  margin-top: 0.2rem;
+}
+
+/* Add User Section */
+.add-user-container {
+  max-width: 650px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.add-user-container h3 {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-bottom: 1.2rem;
+  color: #333;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #444;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+/* Buttons */
+.primary-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(90deg, #00c6ff, #0072ff);
+  color: #fff;
+  font-size: 15px;
+  font-weight: bold;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s;
+}
+
+.primary-btn:hover {
+  background: linear-gradient(90deg, #0072ff, #00c6ff);
+  transform: scale(1.03);
+}

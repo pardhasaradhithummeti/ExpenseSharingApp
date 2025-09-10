@@ -1,0 +1,72 @@
+/* Navbar Container */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  padding: 0.8rem 2rem;
+  color: #fff;
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Logo */
+.logo {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Nav Links */
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-links li a {
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  color: #fff;
+  transition: color 0.3s ease;
+}
+
+.nav-links li a:hover {
+  color: #ffe66d;
+}
+
+/* Right Side */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.greeting {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+/* Logout Button */
+.logout-btn {
+  background: #ff6b6b;
+  border: none;
+  color: #fff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 2rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #ff4757;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
+}
