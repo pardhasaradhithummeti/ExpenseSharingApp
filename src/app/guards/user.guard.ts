@@ -1,16 +1,15 @@
-// auth.guard.ts
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-export const authGuard: CanActivateFn = () => {
+export const userGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.isLoggedIn()) {
+  if (auth.isLoggedIn() && !auth.user?.isAdmin) {
     return true;
   }
 
-  router.navigate(['/login']);
+  router.navigate(['/unauthorized']); 
   return false;
 };

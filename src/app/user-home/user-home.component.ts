@@ -4,6 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { UsersService } from '../services/users.service';
 import { GroupService } from '../services/group.service';
 import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
+import { error } from 'node:console';
+import { UserNavComponent } from '../user-nav/user-nav.component';
 
 interface User {
   id: number;
@@ -19,7 +22,7 @@ interface Group {
 }
 
 @Component({
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule , UserNavComponent],
   standalone: true,
   selector: 'app-user-home',
   templateUrl: './user-home.component.html',
@@ -31,11 +34,7 @@ export class UserHomeComponent implements OnInit {
   receive = 0;
   groups: Group[] = [];
 
-  constructor(
-    private groupService: GroupService,
-    private userService: UsersService,
-    private authService: AuthService
-  ) {
+  constructor( private groupService: GroupService, private userService: UsersService, private authService: AuthService , private router : Router ) {
     // ✅ Get logged in user from AuthService
     this.user = this.authService.user as User;
     console.log('Logged in User: ', this.user);
@@ -43,20 +42,20 @@ export class UserHomeComponent implements OnInit {
 
   ngOnInit() {
     if (this.user && this.user.id) {
-      this.userService.getGroupsByUserId(this.user.id).subscribe(
-        (data) => {
+      this.userService.getGroupsByUserId(this.user.id).subscribe({
+       next: (data) => {
           this.groups = data as Group[];
           console.log('User Groups: ', this.groups);
         },
-        (err) => {
+       error: (err) => {
           console.error('Error fetching user groups', err);
         }
-      );
+    });
     }
   }
 
   openGroup(groupId: number) {
     console.log('Opening group:', groupId);
-    // TODO: navigate to group detail page
+    this.router.navigate(['/group-detail', groupId]);
   }
 }

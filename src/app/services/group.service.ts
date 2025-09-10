@@ -6,35 +6,40 @@ import { AuthService } from './auth.service';
   providedIn: 'root'
 })
 export class GroupService {
-  url = 'https://localhost:44352/api/Group';
-  token  = "";
-  constructor(private http: HttpClient , private authService : AuthService) {
+  private url = 'https://localhost:44352/api/Group';
+  private token = '';
+
+  constructor(private http: HttpClient, private authService: AuthService) {
     this.token = this.authService.getToken() || '';
-   }
-   getAllGroups(){
-    return this.http.get(this.url+'/GetAllGroups', {
-      headers: {
-        Authorization: `Bearer ${this.token}`
-      }
-    });
-   }
-   getGroupById(id: number) {
-     return this.http.get(`${this.url}/${id}`, {
-       headers: {
-         Authorization: `Bearer ${this.token}`
-       }
-     });
-   }
-   addGroup(group: any) {
-     return this.http.post(this.url+ '/CreateGroup', group, {
-       headers: {
-         Authorization: `Bearer ${this.token}`
-       }
-     });
-   }
-   
-   addUserToGroup(groupName: string, email: string) {
-      return this.http.post(`${this.url}/AddUserToGroup`, { groupName, email }, { responseType: 'text' });
-   }
- 
+  }
+
+  private get headers() {
+    return {
+      Authorization: `Bearer ${this.token}`
+    };
+  }
+
+  getAllGroups() {
+    return this.http.get(`${this.url}/GetAllGroups`, { headers: this.headers });
+  }
+
+  getGroupById(id: number) {
+    return this.http.get(`${this.url}/${id}`, { headers: this.headers });
+  }
+
+  addGroup(group: any) {
+    return this.http.post(`${this.url}/CreateGroup`, group, { headers: this.headers });
+  }
+
+  addUserToGroup(groupName: string, email: string) {
+    return this.http.post(
+      `${this.url}/AddUserToGroup`,
+      { groupName, email },
+      { headers: this.headers, responseType: 'text' }
+    );
+  }
+
+  getGroupMembers(id: number) {
+    return this.http.get(`${this.url}/GetGroupMembers/${id}`, { headers: this.headers });
+  }
 }
