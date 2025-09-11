@@ -20,7 +20,7 @@
     <div class="card">
       <div class="card-header">
         <h2>Users</h2>
-        <button class="add-btn">+ Add User</button>
+        <button  class="add-btn" (click)="openAddUser()"  >+ Add User</button>
       </div>
       <div class="card-content">
         <ul class="preview-list">
@@ -28,7 +28,7 @@
             {{ user.username }} ({{ user.email }})
           </li>
         </ul>
-        <a class="view-all" routerLink="/admin/users">View All Users →</a>
+       
       </div>
     </div>
 
@@ -44,7 +44,7 @@
             {{ group.name }} 
           </li>
         </ul>
-        <a class="view-all" routerLink="/admin/groups">View All Groups →</a>
+      
       </div>
     </div>
   </div>

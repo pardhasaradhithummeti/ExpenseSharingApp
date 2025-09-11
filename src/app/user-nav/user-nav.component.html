@@ -1,10 +1,18 @@
 <nav class="navbar">
-  <div class="logo">Expense Sharing App</div>
+  <!-- Left Side (Logo) -->
+  <div class="logo" (click)="goDashboard()">
+    💸 ExpenseShare
+  </div>
 
+  <!-- Center Nav Links -->
   <ul class="nav-links">
-    <li><a href="">Payments</a></li>
-    <li><a href="">Expenses</a></li>
+    <li><a routerLink="/dashboard" routerLinkActive="active">Dashboard</a></li>
+    <li><a routerLink="/profile" routerLinkActive="active">Profile</a></li>
   </ul>
 
-  <button (click)="logout()" class="logout-btn">Logout</button>
+  <!-- Right Side (Greeting + Logout) -->
+  <div class="nav-right">
+    <span class="greeting">Hi, {{ username }}</span>
+    <button class="logout-btn" (click)="logout()">Logout</button>
+  </div>
 </nav>

@@ -4,10 +4,9 @@ import { UserHomeComponent } from './user-home/user-home.component';
 import { AdminHomeComponent } from './admin-home/admin-home.component';
 import { ManageUsersComponent } from './manage-users/manage-users.component';
 import { ManageGroupsComponent } from './manage-groups/manage-groups.component';
-import { authGuard } from './guards/auth.guard';
-import { adminGuard } from './guards/admin.guard';
-import { userGuard } from './guards/user.guard';
+
 import { GroupDetailPageComponent } from './group-detail-page/group-detail-page.component';
+import { PaymentsPageComponent } from './payments-page/payments-page.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -18,5 +17,6 @@ export const routes: Routes = [
   { path: 'admin', component: AdminHomeComponent,  },
   { path: 'manage-users', component: ManageUsersComponent,  },
   { path: 'manage-groups', component: ManageGroupsComponent,  },
+{ path: 'payments/:groupId', component: PaymentsPageComponent }
 
 ];

@@ -1,65 +1,73 @@
+/* Navbar Container */
 .navbar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 1rem 2rem;
-  background: linear-gradient(90deg, #23242a, #2f3138);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-  font-family: 'Inter', sans-serif;
+  align-items: center;
+  background: linear-gradient(135deg, #4facfe, #00f2fe);
+  padding: 0.8rem 2rem;
+  color: #fff;
+  border-radius: 0 0 1rem 1rem;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  font-family: "Segoe UI", sans-serif;
 }
 
+/* Logo */
 .logo {
-  font-size: 1.25rem;
+  margin: 0;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #ffd65a;
-  letter-spacing: 0.5px;
+  cursor: pointer;
 }
 
+/* Nav Links */
 .nav-links {
-  list-style: none;
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.nav-links a {
+.nav-links li a {
   text-decoration: none;
-  color: #ddd;
   font-weight: 500;
-  position: relative;
+  font-size: 1rem;
+  color: #fff;
   transition: color 0.3s ease;
 }
 
-.nav-links a::after {
-  content: '';
-  position: absolute;
-  bottom: -4px;
-  left: 0;
-  width: 0%;
-  height: 2px;
-  background: #ffd65a;
-  transition: width 0.3s ease;
+.nav-links li a:hover,
+.nav-links li a.active {
+  color: #ffe66d;
 }
 
-.nav-links a:hover {
-  color: #ffd65a;
+/* Right Side */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
 }
 
-.nav-links a:hover::after {
-  width: 100%;
+.greeting {
+  font-size: 1rem;
+  font-weight: 500;
 }
 
+/* Logout Button */
 .logout-btn {
-  padding: 0.45rem 1rem;
-  border: 1.5px solid #ff5b5b;
-  border-radius: 8px;
-  background: transparent;
-  color: #ff5b5b;
-  font-weight: 600;
+  background: #ff6b6b;
+  border: none;
+  color: #fff;
+  padding: 0.5rem 1.2rem;
+  border-radius: 2rem;
   cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
   transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
-  background: #ff5b5b;
-  color: #fff;
+  background: #ff4757;
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px rgba(255, 71, 87, 0.4);
 }

@@ -24,7 +24,7 @@ export class GroupService {
   }
 
   getGroupById(id: number) {
-    return this.http.get(`${this.url}/${id}`, { headers: this.headers });
+    return this.http.get(`${this.url}/${id}`, );
   }
 
   addGroup(group: any) {

@@ -1,65 +1,90 @@
-<div class="group-details-container">
-  <!-- Header -->
-  <div class="header">
-    <button (click)="back()">Back</button>
-    <h1>{{ group?.name }}</h1>
-    <div class="header-actions">
-      <button class="btn edit">Edit Group</button>
-      <button class="btn leave">Leave Group</button>
-    </div>
-  </div>
+<app-user-nav></app-user-nav>
 
-  <!-- Overview -->
-  <div class="overview">
-    <div class="card">
-      <h3>Total Expenses</h3>
-      <p>₹{{ group?.totalExpenses }}</p>
-    </div>
-    <div class="card">
-      <h3>You Owe</h3>
-      <p class="owe">₹{{ group?.youOwe }}</p>
-    </div>
-    <div class="card">
-      <h3>You Get Back</h3>
-      <p class="receive">₹{{ group?.youReceive }}</p>
-    </div>
-  </div>
+<div class="group-detail-container">
+  <h2>{{ groupName }}</h2>
+  <p class="desc">{{ groupDescription }}</p>
 
   <!-- Members -->
-  <div class="section">
-    <h2>Members</h2>
-    <ul class="list">
-      <li *ngFor="let m of members">
-        <span>{{ m.username }}</span>
-        <span class="role">{{ m.role }}</span>
-      </li>
-    </ul>
-  </div>
+  <h3>👥 Members</h3>
+  <ul class="members-list">
+    <li *ngFor="let m of members">
+      {{ m.username }}
+    </li>
+  </ul>
 
   <!-- Expenses -->
-  <div class="section">
-    <div class="section-header">
-      <h2>Expenses</h2>
-      <button class="btn add">+ Add Expense</button>
+  <h3>💸 Expenses</h3>
+  <div class="expenses">
+    <div class="expense-card" *ngFor="let e of expenses">
+      <p><b>{{ e.paidByName }}</b> paid ₹{{ e.amount }}</p>
+      <small>{{ e.description }}</small>
     </div>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Description</th>
-          <th>Amount</th>
-          <th>Paid By</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let e of expenses">
-          <td>{{ e.date | date }}</td>
-          <td>{{ e.description }}</td>
-          <td>₹{{ e.amount }}</td>
-          <td>{{ e.paidBy }}</td>
-        </tr>
-      </tbody>
-    </table>
   </div>
-  
+
+  <!-- Add Expense Form (only for logged in user) -->
+  <h3>➕ Add Your Expense</h3>
+  <form (ngSubmit)="addExpense()" #expenseForm="ngForm" class="expense-form">
+    <div class="form-group">
+      <label>Description</label>
+      <input
+        type="text"
+        [(ngModel)]="newExpense.description"
+        name="description"
+        required
+      />
+    </div>
+
+    <div class="form-group">
+      <label>Amount</label>
+      <input
+        type="number"
+        [(ngModel)]="newExpense.amount"
+        name="amount"
+        required
+      />
+    </div>
+
+    <!-- Notice: no Paid By dropdown anymore -->
+
+    <button type="submit" class="btn">Add Expense</button>
+  </form>
+
+  <!-- Balances -->
+  <h3>📊 Balances</h3>
+  <ul class="balances">
+    <li *ngFor="let m of members">
+      {{ m.username }}:
+      <span
+        [ngClass]="{
+          positive: balances[m.id] > 0,
+          negative: balances[m.id] < 0
+        }"
+      >
+        {{ balances[m.id] > 0 ? '+' : '' }}₹{{ balances[m.id] || 0 }}
+      </span>
+    </li>
+  </ul>
+
+  <!-- Settlements -->
+  <h3>🤝 Settlements</h3>
+  <div class="settlements" *ngIf="settlements.length > 0; else noSettlements">
+    <div *ngFor="let s of settlements" class="settlement-card">
+      <p>
+        {{ getUserName(s.fromUserId) }} → {{ getUserName(s.toUserId) }} :
+        ₹{{ s.amount }}
+      </p>
+
+      <!-- Only logged-in user can pay their own dues -->
+      <button
+        *ngIf="s.fromUserId === loggedInUserId"
+        class="pay-btn"
+        (click)="payNow(s)"
+      >
+        Pay Now
+      </button>
+    </div>
+  </div>
+  <ng-template #noSettlements>
+    <p>All settled! 🎉</p>
+  </ng-template>
 </div>

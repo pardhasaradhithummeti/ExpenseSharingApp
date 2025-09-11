@@ -1,0 +1,45 @@
+<div class="payments-container">
+  <h2>💰 Payments</h2>
+
+  <!-- Existing Payments -->
+  <h3>📜 Payment History</h3>
+  <div *ngIf="payments.length > 0; else noPayments">
+    <div class="payment-card" *ngFor="let p of payments">
+      <p>
+        <b>{{ getUserName(p.fromUserId) }}</b> → 
+        <b>{{ getUserName(p.toUserId) }}</b> : ₹{{ p.amount }}
+      </p>
+      <span class="completed">✅ Completed</span>
+    </div>
+  </div>
+  <ng-template #noPayments>
+    <p>No payments yet.</p>
+  </ng-template>
+
+  <!-- Add New Payment -->
+  <h3>➕ Make a Payment</h3>
+  <form (ngSubmit)="addPayment()" class="payment-form">
+    <div class="form-group">
+  <label>From</label>
+  <p><b>{{ getUserName(newPayment.fromUserId) }}</b></p>
+</div>
+
+<div class="form-group">
+  <label>To</label>
+  <select [(ngModel)]="newPayment.toUserId" name="toUserId" required>
+    <option value="0">Select Receiver</option>
+    <option *ngFor="let m of members" [value]="m.id" [disabled]="m.id === newPayment.fromUserId">
+      {{ m.username }}
+    </option>
+  </select>
+</div>
+
+
+    <div class="form-group">
+      <label>Amount</label>
+      <input type="number" [(ngModel)]="newPayment.amount" name="amount" min="1" required />
+    </div>
+
+    <button type="submit" class="btn">💸 Pay Now</button>
+  </form>
+</div>

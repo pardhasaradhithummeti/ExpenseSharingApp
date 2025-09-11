@@ -1,18 +1,32 @@
+<app-user-nav></app-user-nav>
 
-  <app-user-nav></app-user-nav>
-  <div class="dashboard">
-  <div class="stats-row">
-    <div class="stat-card receive">You should receive <p>₹{{ receive }}</p></div>
-    <div class="stat-card owe">You owe <p>₹{{ owe }}</p></div>
-    <div class="stat-card groups">Your Groups <p>{{ groups.length }}</p></div>
+<div class="dashboard-container">
+  <h2>📊 My Groups</h2>
+
+  <!-- Groups List -->
+  <div class="groups-list">
+    <div
+      class="group-card"
+      *ngFor="let group of groups"
+      (click)="openGroup(group.id)"
+    >
+      <h3>{{ group.name }}</h3>
+      
+
+      <div class="group-stats">
+        <span class="total">💰 Total: ₹{{ group.totalExpenses || 0 }}</span>
+        <span
+          class="balance"
+          
+        >
+         <p>  Balance:{{ group.userBalance }}</p>
+        </span>
+      </div>
+    </div>
   </div>
 
-  <h2>Your Groups</h2>
-  <div class="group-list">
-    <div class="group-card" *ngFor="let g of groups">
-      <h3>{{ g.name }}</h3>
-      <p *ngIf="g.memberCount">Members: {{ g.memberCount }}</p>
-      <button (click)="openGroup(g.id)">View</button>
-    </div>
+  <!-- Show message if no groups -->
+  <div class="empty-state" *ngIf="groups.length === 0">
+    <p>You are not part of any groups yet. 🚀</p>
   </div>
 </div>

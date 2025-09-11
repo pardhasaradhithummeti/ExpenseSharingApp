@@ -12,8 +12,13 @@ export class UserNavComponent {
   constructor(private authService: AuthService , private router:Router){
 
   }
+  username = "user";
+  goDashboard(){
+    this.router.navigate(["/user"])
+  }
+  
   logout(){
     this.authService.logout();
-    this.router.navigate(["/login"]);
+
   }
 }

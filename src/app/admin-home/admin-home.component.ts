@@ -33,6 +33,10 @@ export class AdminHomeComponent implements OnInit {
     });
   }
 
+  openAddUser(){
+    this.router.navigate(['/manage-users'])
+  }
+
   openAddGroup() {
     this.router.navigate(['/manage-groups']);
   }
