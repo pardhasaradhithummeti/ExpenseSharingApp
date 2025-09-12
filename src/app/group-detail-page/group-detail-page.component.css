@@ -165,3 +165,8 @@ h3 {
 .pay-btn:hover {
   background: #059669;
 }
+.completed {
+  color: green;
+  font-weight: bold;
+  margin-left: 10px;
+}

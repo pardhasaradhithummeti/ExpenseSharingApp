@@ -6,7 +6,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../services/auth.service';
 import { UserNavComponent } from '../user-nav/user-nav.component';
-import { PaymentsService } from '../services/payments.service';
 
 @Component({
   selector: 'app-group-detail-page',
@@ -22,7 +21,10 @@ export class GroupDetailPageComponent implements OnInit {
   members: any[] = [];
   expenses: any[] = [];
   balances: any = {};
-  settlements: any[] = [];
+
+  // ✅ separate settlements
+  settlements: any[] = [];            // pending
+  completedSettlements: any[] = [];   // completed
 
   // ✅ logged in user id
   loggedInUserId: number | null = null;
@@ -43,16 +45,10 @@ export class GroupDetailPageComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // ✅ check login
     if (this.authService.isLoggedIn()) {
-      // 🚨 fix key mismatch ("userId" not "UserId")
       this.loggedInUserId = Number(localStorage.getItem('UserId'));
-      console.log(this.loggedInUserId);
-      
-      // assign logged in user as payer by default
       this.newExpense.paidById = this.loggedInUserId;
     } else {
-      // not logged in → redirect
       this.router.navigate(['/login']);
       return;
     }
@@ -96,76 +92,71 @@ export class GroupDetailPageComponent implements OnInit {
     });
   }
 
-// ✅ Add new expense
-addExpense() {
-  // Validate description
-  if (!this.newExpense.description || this.newExpense.description.trim().length === 0) {
-    alert('⚠️ Description is required.');
-    return;
+  // ✅ Add new expense
+  addExpense() {
+    if (!this.newExpense.description || this.newExpense.description.trim().length === 0) {
+      alert('⚠️ Description is required.');
+      return;
+    }
+
+    if (!this.newExpense.amount || this.newExpense.amount <= 0) {
+      alert('⚠️ Please enter a valid amount greater than 0.');
+      return;
+    }
+
+    const payload = {
+      ...this.newExpense,
+      groupId: this.groupId,
+      paidById: this.loggedInUserId
+    };
+
+    this.expenseService.addExpense(payload).subscribe({
+      next: () => {
+        alert('✅ Expense added successfully!');
+        this.newExpense = {
+          description: '',
+          amount: 0,
+          paidById: this.loggedInUserId
+        };
+        this.loadExpenses();
+        this.loadBalances();
+      },
+      error: (err) => console.error('Error adding expense', err)
+    });
   }
-
-  // Validate amount
-  if (!this.newExpense.amount || this.newExpense.amount <= 0) {
-    alert('⚠️ Please enter a valid amount greater than 0.');
-    return;
-  }
-
-  const payload = {
-    ...this.newExpense,
-    groupId: this.groupId,
-    paidById: this.loggedInUserId   // enforce current user
-  };
-
-  this.expenseService.addExpense(payload).subscribe({
-    next: () => {
-      alert('✅ Expense added successfully!');
-      this.newExpense = {
-        description: '',
-        amount: 0,
-        paidById: this.loggedInUserId
-      };
-      this.loadExpenses();
-      this.loadBalances();
-    },
-    error: (err) => console.error('Error adding expense', err)
-  });
-}
-
 
   // ✅ Get balances + settlements
   loadBalances() {
     this.expenseService.getBalances(this.groupId).subscribe({
       next: (res: any) => {
         this.balances = res.balances;
-        this.settlements = res.settlements;
+
+        // separate pending and completed
+        this.settlements = res.settlements.filter((s: any) => s.status === 'Pending');
+        this.completedSettlements = res.settlements.filter((s: any) => s.status === 'Completed');
       },
       error: (err) => console.error('Error loading balances', err)
     });
   }
 
-  // ✅ Get username from members
+  // ✅ Get username
   getUserName(userId: number): string {
     const user = this.members.find((m) => m.id === userId);
     return user ? user.username : `User ${userId}`;
   }
 
-  // ✅ Pay Now action (only for logged in user)
- // ✅ Pay Now action (redirect to payments page with settlement info)
-payNow(settlement: any) {
-  if (settlement.fromUserId !== this.loggedInUserId) {
-    alert('⚠️ You can only pay your own dues.');
-    return;
-  }
- 
-  this.router.navigate(['/payments', this.groupId], { 
-      queryParams: { 
-        fromUserId: settlement.fromUserId, 
-        toUserId: settlement.toUserId,
-        
-      } 
+  // ✅ Pay Now
+  payNow(settlement: any) {
+    if (settlement.fromUserId !== this.loggedInUserId) {
+      alert('⚠️ You can only pay your own dues.');
+      return;
     }
-    
-  );
-}
 
+    this.router.navigate(['/payments', this.groupId], {
+      queryParams: {
+        fromUserId: settlement.fromUserId,
+        toUserId: settlement.toUserId
+      }
+    });
+  }
 }

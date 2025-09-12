@@ -21,7 +21,7 @@
     </div>
   </div>
 
-  <!-- Add Expense Form (only for logged in user) -->
+  <!-- Add Expense Form -->
   <h3>➕ Add Your Expense</h3>
   <form (ngSubmit)="addExpense()" #expenseForm="ngForm" class="expense-form">
     <div class="form-group">
@@ -44,8 +44,6 @@
       />
     </div>
 
-    <!-- Notice: no Paid By dropdown anymore -->
-
     <button type="submit" class="btn">Add Expense</button>
   </form>
 
@@ -66,7 +64,7 @@
   </ul>
 
   <!-- Settlements -->
-  <h3>🤝 Settlements</h3>
+  <h3>🤝 Pending Settlements</h3>
   <div class="settlements" *ngIf="settlements.length > 0; else noSettlements">
     <div *ngFor="let s of settlements" class="settlement-card">
       <p>
@@ -84,6 +82,18 @@
       </button>
     </div>
   </div>
+
+  <!-- Completed Settlements -->
+  <h3>✅ Completed Settlements</h3>
+  <div class="settlements" *ngIf="completedSettlements.length > 0">
+    <div *ngFor="let s of completedSettlements" class="settlement-card">
+      <p>
+        <b>{{ getUserName(s.fromUserId) }} → {{ getUserName(s.toUserId) }} : ₹{{ s.amount }}</b>
+        <span class="completed">✔ Completed</span>
+      </p>
+    </div>
+  </div>
+
   <ng-template #noSettlements>
     <p>All settled! 🎉</p>
   </ng-template>
