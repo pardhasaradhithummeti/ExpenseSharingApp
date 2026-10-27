@@ -1,0 +1,176 @@
+<app-shell>
+  <div class="payments-page">
+    <!-- Header Row -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Settlements & Payments</h1>
+        <p class="page-subtitle">Track debt simplification balances and completed payments.</p>
+      </div>
+      <button class="btn btn-primary" (click)="openRecordPayment()">
+        🤝 Record Payment
+      </button>
+    </div>
+
+    <!-- Financial Hierarchy Cards -->
+    <div class="financial-balance-banner">
+      <!-- You Owe -->
+      <div class="balance-metric-card card card-owe">
+        <div class="metric-top">
+          <span class="metric-label">You Owe</span>
+          <span class="badge badge-rose">To Pay</span>
+        </div>
+        <div class="metric-amount text-owe">₹{{ youOwe | number:'1.2-2' }}</div>
+        <div class="metric-hint">Total amount you owe to other members</div>
+      </div>
+
+      <!-- You Are Owed -->
+      <div class="balance-metric-card card card-receive">
+        <div class="metric-top">
+          <span class="metric-label">You Are Owed</span>
+          <span class="badge badge-emerald">To Receive</span>
+        </div>
+        <div class="metric-amount text-receive">₹{{ youAreOwed | number:'1.2-2' }}</div>
+        <div class="metric-hint">Total amount other members owe you</div>
+      </div>
+
+      <!-- Net Balance -->
+      <div class="balance-metric-card card card-net">
+        <div class="metric-top">
+          <span class="metric-label">Net Balance</span>
+          <span
+            class="badge"
+            [ngClass]="netBalance > 0 ? 'badge-emerald' : (netBalance < 0 ? 'badge-rose' : 'badge-slate')"
+          >
+            {{ netBalance > 0 ? '+ In Credit' : (netBalance < 0 ? '- In Debt' : 'Settled') }}
+          </span>
+        </div>
+        <div
+          class="metric-amount"
+          [ngClass]="netBalance > 0 ? 'text-receive' : (netBalance < 0 ? 'text-owe' : 'text-muted')"
+        >
+          {{ netBalance > 0 ? '+' : '' }}₹{{ netBalance | number:'1.2-2' }}
+        </div>
+        <div class="metric-hint">Your overall financial standing</div>
+      </div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tabs-header-row">
+      <div class="tab-buttons">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'pending'"
+          (click)="activeTab = 'pending'"
+        >
+          Pending Settlements ({{ pendingSettlements.length }})
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'history'"
+          (click)="activeTab = 'history'"
+        >
+          Payment History ({{ paymentHistory.length }})
+        </button>
+      </div>
+    </div>
+
+    <!-- Skeletons -->
+    <div class="card" *ngIf="isLoading" style="padding: 2rem;">
+      <div class="skeleton" style="height: 24px; width: 30%; margin-bottom: 1rem;"></div>
+      <div class="skeleton" style="height: 52px; width: 100%; margin-bottom: 0.75rem;" *ngFor="let i of [1,2,3]"></div>
+    </div>
+
+    <!-- TAB 1: PENDING SETTLEMENTS -->
+    <div class="tab-panel" *ngIf="activeTab === 'pending' && !isLoading">
+      <!-- Empty Settlements State -->
+      <div class="empty-state" *ngIf="pendingSettlements.length === 0">
+        <div class="empty-icon" style="background-color: var(--receive-light); color: var(--receive)">✓</div>
+        <h3 class="empty-title">All settled up!</h3>
+        <p class="empty-description">
+          There are no pending debts across any of your groups. Everyone is even!
+        </p>
+      </div>
+
+      <!-- Settlements List -->
+      <div class="settlements-grid" *ngIf="pendingSettlements.length > 0">
+        <div
+          class="settlement-card card"
+          *ngFor="let s of pendingSettlements"
+          [class.card-highlight]="s.isUserInvolved"
+        >
+          <div class="settlement-card-top">
+            <span class="group-tag">{{ s.groupName }}</span>
+            <span class="user-role-tag badge-rose badge" *ngIf="s.isUserDebtor">You owe</span>
+            <span class="user-role-tag badge-emerald badge" *ngIf="s.isUserCreditor">You receive</span>
+          </div>
+
+          <div class="settlement-exchange">
+            <div class="party-box from-party">
+              <span class="party-role">From</span>
+              <span class="party-name">{{ s.fromUsername }}</span>
+            </div>
+
+            <div class="exchange-arrow">
+              <span class="exchange-amount">₹{{ s.amount | number:'1.2-2' }}</span>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+
+            <div class="party-box to-party">
+              <span class="party-role">To</span>
+              <span class="party-name">{{ s.toUsername }}</span>
+            </div>
+          </div>
+
+          <div class="settlement-card-bottom">
+            <button class="btn btn-primary btn-sm settle-action-btn" (click)="openRecordPayment(s)">
+              🤝 Settle ₹{{ s.amount | number:'1.2-2' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PAYMENT HISTORY -->
+    <div class="tab-panel" *ngIf="activeTab === 'history' && !isLoading">
+      <!-- Empty Payments State -->
+      <div class="empty-state" *ngIf="paymentHistory.length === 0">
+        <div class="empty-icon">🤝</div>
+        <h3 class="empty-title">No completed payments yet</h3>
+        <p class="empty-description">
+          When members settle their debts and record payments, they will show up here.
+        </p>
+        <button class="btn btn-primary" (click)="openRecordPayment()">
+          🤝 Record First Payment
+        </button>
+      </div>
+
+      <!-- Payments Table Card -->
+      <div class="card payment-table-card" *ngIf="paymentHistory.length > 0">
+        <div class="payment-rows-container">
+          <div class="payment-row" *ngFor="let p of paymentHistory">
+            <div class="payment-check-circle">✓</div>
+            <div class="payment-details-box">
+              <span class="payment-main-title">
+                <strong>{{ p.fromName }}</strong> paid <strong>{{ p.toName }}</strong>
+              </span>
+              <div class="payment-sub-meta">
+                <span class="group-name-text">{{ p.groupName }}</span>
+                <span class="meta-dot">•</span>
+                <span class="payment-date-text">{{ p.createdAt | date:'medium' }}</span>
+              </div>
+            </div>
+            <div class="payment-status-pill">
+              <span class="badge badge-emerald">Completed</span>
+            </div>
+            <div class="payment-amount-val">
+              ₹{{ p.amount | number:'1.2-2' }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-shell>

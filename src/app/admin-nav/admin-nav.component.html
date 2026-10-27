@@ -1,0 +1,20 @@
+<nav class="navbar">
+  <div class="nav-left">
+    <a routerLink="/admin" class="logo-link">
+      <div class="logo-mark">💸</div>
+      <span class="logo-text">SplitPay Admin</span>
+    </a>
+  </div>
+
+  <ul class="nav-links">
+    <li><a routerLink="/admin" routerLinkActive="active">Overview</a></li>
+    <li><a routerLink="/manage-groups" routerLinkActive="active">Groups</a></li>
+    <li><a routerLink="/manage-users" routerLinkActive="active">Users</a></li>
+    <li><a routerLink="/user" class="switch-link">User View →</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <span class="badge badge-amber">Admin</span>
+    <button class="btn btn-secondary btn-sm" (click)="onlogout()">Logout</button>
+  </div>
+</nav>

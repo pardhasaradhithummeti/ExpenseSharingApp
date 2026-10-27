@@ -1,0 +1,123 @@
+<app-shell>
+  <div class="profile-page">
+    <div class="page-header">
+      <h1 class="page-title">Settings & Profile</h1>
+      <p class="page-subtitle">Manage your account information, notification preferences, and session.</p>
+    </div>
+
+    <div class="settings-grid">
+      <!-- Profile Card -->
+      <div class="card profile-hero-card">
+        <div class="profile-avatar-row">
+          <div class="avatar-large">
+            {{ getUserInitials(user?.username) }}
+          </div>
+          <div class="profile-meta">
+            <h2 class="profile-username">{{ user?.username || 'User' }}</h2>
+            <p class="profile-email">{{ user?.email }}</p>
+            <div class="profile-badges">
+              <span class="badge" [ngClass]="user?.isAdmin ? 'badge-amber' : 'badge-emerald'">
+                {{ user?.isAdmin ? '🛡️ Administrator' : '👤 Standard Member' }}
+              </span>
+              <span class="badge badge-slate">ID: #{{ user?.id }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="profile-stats-strip">
+          <div class="p-stat">
+            <span class="p-stat-label">Active Groups</span>
+            <span class="p-stat-val">{{ groups.length }}</span>
+          </div>
+          <div class="p-stat-divider"></div>
+          <div class="p-stat">
+            <span class="p-stat-label">Account Status</span>
+            <span class="p-stat-val text-receive">Active</span>
+          </div>
+          <div class="p-stat-divider"></div>
+          <div class="p-stat">
+            <span class="p-stat-label">Role</span>
+            <span class="p-stat-val">{{ user?.isAdmin ? 'Admin' : 'User' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- App Preferences Card -->
+      <div class="card section-card">
+        <div class="card-header">
+          <h2 class="card-title">Preferences</h2>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Default Currency</label>
+          <select class="form-select" [(ngModel)]="currency">
+            <option value="INR (₹)">Indian Rupee (₹ INR)</option>
+            <option value="USD ($)">US Dollar ($ USD)</option>
+            <option value="EUR (€)">Euro (€ EUR)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Date Format</label>
+          <select class="form-select" [(ngModel)]="dateFormat">
+            <option value="DD/MM/YYYY">DD/MM/YYYY (e.g. 05/10/2026)</option>
+            <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+            <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+          </select>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <span class="toggle-title">Smart Debt Simplification</span>
+            <p class="toggle-desc">Automatically calculate the minimum number of payments between group members.</p>
+          </div>
+          <input type="checkbox" [(ngModel)]="debtSimplification" class="custom-toggle" />
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <span class="toggle-title">Email Notifications</span>
+            <p class="toggle-desc">Receive email digests when you are added to a group or an expense is recorded.</p>
+          </div>
+          <input type="checkbox" [(ngModel)]="emailAlerts" class="custom-toggle" />
+        </div>
+
+        <div class="card-footer-action">
+          <button class="btn btn-primary" (click)="savePreferences()">
+            Save Preferences
+          </button>
+        </div>
+      </div>
+
+      <!-- Security & Session Card -->
+      <div class="card section-card">
+        <div class="card-header">
+          <h2 class="card-title">Session & Security</h2>
+        </div>
+
+        <div class="security-info-box">
+          <div class="security-item">
+            <div class="security-icon">🔒</div>
+            <div>
+              <span class="sec-label">Authentication Token</span>
+              <p class="sec-desc">Active JWT signed session with ASP.NET Core backend.</p>
+            </div>
+          </div>
+          <div class="security-item">
+            <div class="security-icon">🛡️</div>
+            <div>
+              <span class="sec-label">Permission Level</span>
+              <p class="sec-desc">{{ user?.isAdmin ? 'Full administrative access to manage users and groups.' : 'Standard expense-sharing participant.' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer-action">
+          <button class="btn btn-danger" (click)="logout()">
+            Sign Out of Account
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-shell>
