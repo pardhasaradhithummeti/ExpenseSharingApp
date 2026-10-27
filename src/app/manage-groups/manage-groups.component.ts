@@ -1,57 +1,141 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminNavComponent } from '../admin-nav/admin-nav.component';
+import { RouterModule } from '@angular/router';
 import { GroupService } from '../services/group.service';
-import { nextTick } from 'process';
-import { error } from 'console';
+import { ToastService } from '../services/toast.service';
+import { AppShellComponent } from '../shared/app-shell/app-shell.component';
+import { Group } from '../models';
 
 @Component({
   selector: 'app-manage-groups',
   standalone: true,
-  imports: [CommonModule, FormsModule, AdminNavComponent],
+  imports: [CommonModule, FormsModule, RouterModule, AppShellComponent],
   templateUrl: './manage-groups.component.html',
   styleUrls: ['./manage-groups.component.css']
 })
 export class ManageGroupsComponent implements OnInit {
-  groups: any[] = [];
+  groups: Group[] = [];
+  filteredGroups: Group[] = [];
+  searchQuery = '';
+  isLoading = true;
+
+  // Add Group Modal
+  showAddGroupModal = false;
   newGroup = {
     name: '',
     description: ''
   };
+  isCreating = false;
+
+  // Add User to Group Modal
+  showAssignUserModal = false;
   selectedGroup: string = '';
   userEmail: string = '';
-  constructor(private groupService: GroupService) { }
+  isAssigning = false;
+
+  constructor(
+    private groupService: GroupService,
+    private toastService: ToastService
+  ) {}
+
   ngOnInit() {
     this.getGroups();
   }
 
-  addGroup() {
-    if (this.newGroup.name) {
-      this.groupService.addGroup(this.newGroup).subscribe((group) => {
-        this.groups.push(group);
-        this.newGroup.name = '';
-        this.newGroup.description = '';
-      });
-    }
-  }
   getGroups() {
-    this.groupService.getAllGroups().subscribe((data: any) => {
-      this.groups = data;
+    this.isLoading = true;
+    this.groupService.getAllGroups().subscribe({
+      next: (data: Group[]) => {
+        this.groups = data;
+        this.applyFilter();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching groups', err);
+        this.isLoading = false;
+        this.toastService.error('Failed to load groups.');
+      }
     });
-}
-addUserToGroup(groupName: string, email: string) {
-  
+  }
 
-  this.groupService.addUserToGroup(groupName, email).subscribe({
-    next: (res) => {
-      console.log(`User ${email} added to group ${groupName}`, res);
-      this.userEmail = '';
-      this.selectedGroup = '';
-    },
-    error: (err) => {
-      console.error('Error adding user to group', err);
+  applyFilter() {
+    if (!this.searchQuery.trim()) {
+      this.filteredGroups = [...this.groups];
+      return;
     }
-  });
-}
+    const q = this.searchQuery.toLowerCase().trim();
+    this.filteredGroups = this.groups.filter(g =>
+      g.name.toLowerCase().includes(q) ||
+      (g.description && g.description.toLowerCase().includes(q))
+    );
+  }
+
+  // --- Add Group ---
+  openAddGroup() {
+    this.newGroup = { name: '', description: '' };
+    this.showAddGroupModal = true;
+  }
+
+  closeAddGroup() {
+    this.showAddGroupModal = false;
+    this.isCreating = false;
+  }
+
+  addGroup() {
+    if (!this.newGroup.name.trim()) {
+      this.toastService.warning('Group name is required.');
+      return;
+    }
+
+    this.isCreating = true;
+    this.groupService.addGroup({
+      name: this.newGroup.name.trim(),
+      description: this.newGroup.description.trim()
+    }).subscribe({
+      next: (created) => {
+        this.toastService.success(`Group "${this.newGroup.name}" created successfully!`);
+        this.closeAddGroup();
+        this.getGroups();
+      },
+      error: (err) => {
+        console.error('Error creating group', err);
+        this.isCreating = false;
+        this.toastService.error('Failed to create group.');
+      }
+    });
+  }
+
+  // --- Assign User to Group ---
+  openAssignUser(groupName?: string) {
+    this.selectedGroup = groupName || (this.groups[0] ? this.groups[0].name : '');
+    this.userEmail = '';
+    this.showAssignUserModal = true;
+  }
+
+  closeAssignUser() {
+    this.showAssignUserModal = false;
+    this.isAssigning = false;
+  }
+
+  addUserToGroup(groupName: string, email: string) {
+    if (!groupName || !email.trim()) {
+      this.toastService.warning('Please select a group and enter a user email.');
+      return;
+    }
+
+    this.isAssigning = true;
+    this.groupService.addUserToGroup(groupName, email.trim()).subscribe({
+      next: (res) => {
+        this.toastService.success(`User ${email} added to ${groupName}!`);
+        this.closeAssignUser();
+        this.getGroups();
+      },
+      error: (err) => {
+        console.error('Error adding user to group', err);
+        this.isAssigning = false;
+        this.toastService.error('Failed to add user to group. Check email.');
+      }
+    });
+  }
 }

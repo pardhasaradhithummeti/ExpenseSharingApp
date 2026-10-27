@@ -1,32 +1,309 @@
-<app-user-nav></app-user-nav>
+<app-shell>
+  <div class="dashboard-page">
+    <!-- Top Greeting & Action Bar -->
+    <div class="dashboard-hero">
+      <div class="hero-left">
+        <h1 class="welcome-heading">Welcome, {{ user?.username || 'Friend' }} 👋</h1>
+        <p class="welcome-subtitle">Here is a summary of your shared balances and recent expenses.</p>
+      </div>
+      <div class="hero-actions">
+        <button class="btn btn-secondary" (click)="openCreateGroup()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          New Group
+        </button>
+        <button class="btn btn-secondary" (click)="openSettleUp()">
+          🤝 Settle Up
+        </button>
+        <button class="btn btn-primary" (click)="openAddExpense()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add Expense
+        </button>
+      </div>
+    </div>
 
-<div class="dashboard-container">
-  <h2>📊 My Groups</h2>
+    <!-- Loading Skeleton -->
+    <div class="stats-grid" *ngIf="isLoading">
+      <div class="stat-card skeleton-card" *ngFor="let i of [1,2,3,4]">
+        <div class="skeleton" style="height: 16px; width: 40%; margin-bottom: 12px;"></div>
+        <div class="skeleton" style="height: 32px; width: 70%;"></div>
+      </div>
+    </div>
 
-  <!-- Groups List -->
-  <div class="groups-list">
-    <div
-      class="group-card"
-      *ngFor="let group of groups"
-      (click)="openGroup(group.id)"
-    >
-      <h3>{{ group.name }}</h3>
-      
+    <!-- Financial Overview Stats Cards -->
+    <div class="stats-grid" *ngIf="!isLoading">
+      <!-- Total Expenses -->
+      <div class="stat-card total-card">
+        <div class="stat-header">
+          <span class="stat-label">Total Group Expenses</span>
+          <div class="stat-icon-wrapper">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="stat-value">₹{{ totalExpenses | number:'1.2-2' }}</div>
+        <div class="stat-subtext">Across all active shared groups</div>
+      </div>
 
-      <div class="group-stats">
-        <span class="total">💰 Total: ₹{{ group.totalExpenses || 0 }}</span>
-        <span
-          class="balance"
-          
+      <!-- You are owed -->
+      <div class="stat-card receive-card">
+        <div class="stat-header">
+          <span class="stat-label">You Are Owed</span>
+          <span class="badge badge-emerald">To Receive</span>
+        </div>
+        <div class="stat-value text-receive">₹{{ receive | number:'1.2-2' }}</div>
+        <div class="stat-subtext text-receive">Friends owe you across groups</div>
+      </div>
+
+      <!-- You owe -->
+      <div class="stat-card owe-card">
+        <div class="stat-header">
+          <span class="stat-label">You Owe</span>
+          <span class="badge badge-rose">To Pay</span>
+        </div>
+        <div class="stat-value text-owe">₹{{ owe | number:'1.2-2' }}</div>
+        <div class="stat-subtext text-owe">You owe friends for shared bills</div>
+      </div>
+
+      <!-- Net Balance -->
+      <div class="stat-card balance-card">
+        <div class="stat-header">
+          <span class="stat-label">Net Balance</span>
+          <span
+            class="badge"
+            [ngClass]="netBalance > 0 ? 'badge-emerald' : (netBalance < 0 ? 'badge-rose' : 'badge-slate')"
+          >
+            {{ netBalance > 0 ? '+ In Credit' : (netBalance < 0 ? '- In Debt' : 'Settled Up') }}
+          </span>
+        </div>
+        <div
+          class="stat-value"
+          [ngClass]="netBalance > 0 ? 'text-receive' : (netBalance < 0 ? 'text-owe' : 'text-muted')"
         >
-         <p>  Balance:{{ group.userBalance }}</p>
-        </span>
+          {{ netBalance > 0 ? '+' : '' }}₹{{ netBalance | number:'1.2-2' }}
+        </div>
+        <div class="stat-subtext">Overall financial position</div>
+      </div>
+    </div>
+
+    <!-- Main Content Layout (2 Columns: Activity/Settlements + Groups) -->
+    <div class="dashboard-columns">
+      <!-- Left Column: Recent Activity & Settlements -->
+      <div class="column-main">
+        <!-- Outstanding Settlements (Who owes Who) -->
+        <div class="card section-card" *ngIf="outstandingSettlements.length > 0">
+          <div class="card-header">
+            <div class="header-title-group">
+              <h2 class="card-title">Pending Settlements</h2>
+              <span class="badge badge-amber">{{ outstandingSettlements.length }} pending</span>
+            </div>
+            <button class="btn btn-outline btn-sm" (click)="openSettleUp()">
+              Settle Balances
+            </button>
+          </div>
+
+          <div class="settlements-list">
+            <div class="settlement-item" *ngFor="let s of outstandingSettlements">
+              <div class="settlement-users">
+                <span class="user-pill from-user">{{ s.fromUsername }}</span>
+                <span class="owes-text">owes</span>
+                <span class="user-pill to-user">{{ s.toUsername }}</span>
+              </div>
+              <div class="settlement-action">
+                <span class="settlement-amount">₹{{ s.amount | number:'1.2-2' }}</span>
+                <button class="btn btn-primary btn-sm settle-btn" (click)="openSettleUp(s)">
+                  Settle Now →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="card section-card">
+          <div class="card-header">
+            <div class="header-title-group">
+              <h2 class="card-title">Recent Activity</h2>
+              <span class="badge badge-slate" *ngIf="recentActivities.length > 0">
+                Latest updates
+              </span>
+            </div>
+            <a routerLink="/expenses" class="view-all-link" *ngIf="recentActivities.length > 0">
+              View All Expenses →
+            </a>
+          </div>
+
+          <!-- Empty Activity State -->
+          <div class="empty-state" *ngIf="!isLoading && recentActivities.length === 0">
+            <div class="empty-icon">💸</div>
+            <h3 class="empty-title">No expenses yet</h3>
+            <p class="empty-description">
+              Start tracking shared expenses by adding your first expense to a group.
+            </p>
+            <button class="btn btn-primary btn-sm" (click)="openAddExpense()">
+              + Add First Expense
+            </button>
+          </div>
+
+          <!-- Activity List -->
+          <div class="activity-timeline" *ngIf="recentActivities.length > 0">
+            <div class="activity-row" *ngFor="let act of recentActivities">
+              <div class="activity-icon-col">
+                <span class="activity-category-icon">{{ act.icon }}</span>
+              </div>
+              <div class="activity-details-col">
+                <div class="activity-title-row">
+                  <span class="activity-title">{{ act.title }}</span>
+                  <span class="activity-amount" [ngClass]="act.isPayer ? 'text-receive' : 'text-owe'">
+                    {{ act.isPayer ? '+' : '-' }}₹{{ act.amount | number:'1.2-2' }}
+                  </span>
+                </div>
+                <div class="activity-meta-row">
+                  <span class="activity-group-badge">{{ act.groupName }}</span>
+                  <span class="meta-dot">•</span>
+                  <span class="activity-payer">
+                    <ng-container *ngIf="act.type === 'expense'">
+                      {{ act.isPayer ? 'You paid' : act.payerName + ' paid' }}
+                    </ng-container>
+                    <ng-container *ngIf="act.type === 'payment'">
+                      {{ act.isPayer ? 'You transferred' : act.payerName + ' transferred' }}
+                    </ng-container>
+                  </span>
+                  <span class="meta-dot">•</span>
+                  <span class="activity-time">{{ formatDate(act.date) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Your Groups -->
+      <div class="column-sidebar">
+        <div class="card section-card">
+          <div class="card-header">
+            <h2 class="card-title">Your Groups</h2>
+            <button class="btn btn-outline btn-sm" (click)="openCreateGroup()">
+              + New
+            </button>
+          </div>
+
+          <!-- Empty Groups State -->
+          <div class="empty-state" *ngIf="!isLoading && groups.length === 0">
+            <div class="empty-icon">👥</div>
+            <h3 class="empty-title">No groups found</h3>
+            <p class="empty-description">
+              Create a group for an apartment, trip, or team to begin sharing costs.
+            </p>
+            <button class="btn btn-primary btn-sm" (click)="openCreateGroup()">
+              + Create Group
+            </button>
+          </div>
+
+          <!-- Group Cards List -->
+          <div class="group-cards-vertical" *ngIf="groups.length > 0">
+            <div class="group-card-item" *ngFor="let g of groups" (click)="openGroup(g.id)">
+              <div class="group-card-top">
+                <div class="group-title-group">
+                  <h3 class="group-name">{{ g.name }}</h3>
+                  <span class="group-desc" *ngIf="g.description">{{ g.description }}</span>
+                </div>
+                <div class="group-chevron">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </div>
+              </div>
+
+              <div class="group-card-middle">
+                <div class="group-metric">
+                  <span class="metric-label">Members</span>
+                  <span class="metric-val">{{ g.memberCount }} members</span>
+                </div>
+                <div class="group-metric">
+                  <span class="metric-label">Total Spend</span>
+                  <span class="metric-val">₹{{ g.totalExpenseAmount | number:'1.2-2' }}</span>
+                </div>
+              </div>
+
+              <div class="group-card-bottom">
+                <div class="group-user-balance">
+                  <span class="balance-tag" *ngIf="g.userBalance > 0" style="color: var(--receive)">
+                    You are owed ₹{{ g.userBalance | number:'1.2-2' }}
+                  </span>
+                  <span class="balance-tag" *ngIf="g.userBalance < 0" style="color: var(--owe)">
+                    You owe ₹{{ (g.userBalance * -1) | number:'1.2-2' }}
+                  </span>
+                  <span class="balance-tag text-muted" *ngIf="g.userBalance === 0">
+                    Settled up
+                  </span>
+                </div>
+                <button class="btn btn-secondary btn-sm" (click)="$event.stopPropagation(); openGroup(g.id)">
+                  View Group →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL: Create New Group
+         ========================================================================= -->
+    <div class="modal-backdrop" *ngIf="showCreateGroupModal" (click)="closeCreateGroup()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>👥 Create New Group</h3>
+          <button class="btn-icon" (click)="closeCreateGroup()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Group Name</label>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="e.g. Goa Trip, Apartment 402, Team Lunch"
+              [(ngModel)]="newGroupName"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description (Optional)</label>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="e.g. Shared expenses for our weekend getaway"
+              [(ngModel)]="newGroupDescription"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeCreateGroup()">Cancel</button>
+          <button
+            class="btn btn-primary"
+            [disabled]="isCreatingGroup || !newGroupName.trim()"
+            (click)="submitCreateGroup()"
+          >
+            <span *ngIf="isCreatingGroup">Creating...</span>
+            <span *ngIf="!isCreatingGroup">Create Group</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
-
-  <!-- Show message if no groups -->
-  <div class="empty-state" *ngIf="groups.length === 0">
-    <p>You are not part of any groups yet. 🚀</p>
-  </div>
-</div>
+</app-shell>
