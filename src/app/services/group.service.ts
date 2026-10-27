@@ -1,45 +1,48 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
+import { Group, GroupMember } from '../models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GroupService {
-  private url = 'https://localhost:44352/api/Group';
-  private token = '';
+  url = 'https://localhost:44352/api/Group';
 
-  constructor(private http: HttpClient, private authService: AuthService) {
-    this.token = this.authService.getToken() || '';
-  }
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
-  private get headers() {
+  private getHeaders(): { headers: HttpHeaders } {
+    const token = this.authService.getToken() || '';
     return {
-      Authorization: `Bearer ${this.token}`
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${token}`
+      })
     };
   }
 
-  getAllGroups() {
-    return this.http.get(`${this.url}/GetAllGroups`, { headers: this.headers });
+  getAllGroups(): Observable<Group[]> {
+    return this.http.get<Group[]>(`${this.url}/GetAllGroups`, this.getHeaders());
   }
 
-  getGroupById(id: number) {
-    return this.http.get(`${this.url}/${id}`, );
+  getGroupById(id: number): Observable<Group> {
+    return this.http.get<Group>(`${this.url}/${id}`, this.getHeaders());
   }
 
-  addGroup(group: any) {
-    return this.http.post(`${this.url}/CreateGroup`, group, { headers: this.headers });
+  addGroup(group: { name: string; description: string }): Observable<any> {
+    return this.http.post(`${this.url}/CreateGroup`, group, this.getHeaders());
   }
 
-  addUserToGroup(groupName: string, email: string) {
-    return this.http.post(
-      `${this.url}/AddUserToGroup`,
-      { groupName, email },
-      { headers: this.headers, responseType: 'text' }
-    );
+  addUserToGroup(groupName: string, email: string): Observable<any> {
+    return this.http.post(`${this.url}/AddUserToGroup`, { groupName, email }, {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${this.authService.getToken() || ''}`
+      }),
+      responseType: 'text'
+    });
   }
 
-  getGroupMembers(id: number) {
-    return this.http.get(`${this.url}/GetGroupMembers/${id}`, { headers: this.headers });
+  getGroupMembers(id: number): Observable<GroupMember[]> {
+    return this.http.get<GroupMember[]>(`${this.url}/GetGroupMembers/${id}`, this.getHeaders());
   }
 }

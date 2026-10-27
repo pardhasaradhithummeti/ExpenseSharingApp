@@ -1,42 +1,38 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
+import { Observable } from 'rxjs';
+import { Expense, CreateExpenseDto, GroupBalancesResponse } from '../models';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExpenseService {
-  private url = "https://localhost:44352/api/Expense";
+  private apiUrl = 'https://localhost:44352/api/Expense';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 
-  // ✅ Get headers with token
-  private getHeaders(): HttpHeaders {
-    const token = this.authService.getToken();
-    return new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
+  private getHeaders(): { headers: HttpHeaders } {
+    const token = this.authService.getToken() || '';
+    return {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${token}`
+      })
+    };
   }
 
-  // ✅ Get all expenses of a group
-  getExpensesByGroup(groupId: number): Observable<any> {
-    return this.http.get(`${this.url}/group/${groupId}`, {
-      headers: this.getHeaders()
-    });
+  // 🔹 Create new expense in a group
+  createExpense(dto: CreateExpenseDto): Observable<Expense> {
+    return this.http.post<Expense>(this.apiUrl, dto, this.getHeaders());
   }
 
-  // ✅ Get balances & settlements of a group
-  getBalances(groupId: number): Observable<any> {
-    return this.http.get(`${this.url}/group/${groupId}/balances`, {
-      headers: this.getHeaders()
-    });
+  // 🔹 Get all expenses for a specific group
+  getExpensesByGroupId(groupId: number): Observable<Expense[]> {
+    return this.http.get<Expense[]>(`${this.apiUrl}/group/${groupId}`, this.getHeaders());
   }
 
-  // ✅ Add a new expense
-  addExpense(expense: any): Observable<any> {
-    return this.http.post(this.url, expense, {
-      headers: this.getHeaders()
-    });
+  // 🔹 Get group balances & recommended settlements
+  getBalancesByGroupId(groupId: number): Observable<GroupBalancesResponse> {
+    return this.http.get<GroupBalancesResponse>(`${this.apiUrl}/group/${groupId}/balances`, this.getHeaders());
   }
 }

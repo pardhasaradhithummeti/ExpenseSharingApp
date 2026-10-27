@@ -1,62 +1,191 @@
-<app-admin-nav></app-admin-nav>
-
-<div class="manage-groups-container">
-  <h2>👥 Manage Groups</h2>
-
-  <!-- Add Group Form -->
-  <form (ngSubmit)="addGroup()" class="group-form">
-    <input
-      [(ngModel)]="newGroup.name"
-      placeholder="Group Name"
-      name="name"
-      required
-    />
-    <input
-      [(ngModel)]="newGroup.description"
-      placeholder="Description"
-      name="description"
-      required
-    />
-    <button type="submit" class="primary-btn">➕ Create Group</button>
-  </form>
-
-  <!-- Group List -->
-  <ul class="group-list">
-    <li *ngFor="let g of groups" class="group-item">
-      <div class="group-details">
-        <span class="group-name">{{ g.name }}</span>
-        <span class="group-desc">{{ g.description }}</span>
+<app-shell>
+  <div class="manage-groups-page">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Manage Groups</h1>
+        <p class="page-subtitle">Create shared expense groups and assign users to groups.</p>
       </div>
-    </li>
-  </ul>
-</div>
 
-<!-- Add User to Group -->
-<div class="add-user-container">
-  <h3>➕ Add User to Group</h3>
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="openAssignUser()">
+          👤 Assign User to Group
+        </button>
+        <button class="btn btn-primary" (click)="openAddGroup()">
+          ➕ Create Group
+        </button>
+      </div>
+    </div>
 
-  <div class="form-group">
-    <label for="userEmail">User Email</label>
-    <input
-      id="userEmail"
-      type="text"
-      [(ngModel)]="userEmail"
-      placeholder="Enter user email"
-      name="userEmail"
-    />
+    <!-- Search & Filter -->
+    <div class="filter-bar">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="form-input search-input"
+          placeholder="Search groups..."
+          [(ngModel)]="searchQuery"
+          (input)="applyFilter()"
+        />
+      </div>
+      <span class="badge badge-slate">{{ filteredGroups.length }} Groups</span>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <div class="card" *ngIf="isLoading" style="padding: 2rem;">
+      <div class="skeleton" style="height: 24px; width: 40%; margin-bottom: 1rem;"></div>
+      <div class="skeleton" style="height: 52px; width: 100%; margin-bottom: 0.5rem;" *ngFor="let i of [1,2,3]"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && filteredGroups.length === 0">
+      <div class="empty-icon">👥</div>
+      <h3 class="empty-title">No groups found</h3>
+      <p class="empty-description">Create your first group to start assigning users.</p>
+      <button class="btn btn-primary" (click)="openAddGroup()">
+        + Create Group
+      </button>
+    </div>
+
+    <!-- Groups Grid -->
+    <div class="groups-cards-grid" *ngIf="!isLoading && filteredGroups.length > 0">
+      <div class="group-admin-card card" *ngFor="let g of filteredGroups">
+        <div class="group-admin-header">
+          <div class="group-icon-avatar">👥</div>
+          <div class="group-text-box">
+            <h3 class="admin-group-name">{{ g.name }}</h3>
+            <p class="admin-group-desc">{{ g.description || 'No description provided' }}</p>
+          </div>
+        </div>
+
+        <div class="group-admin-details">
+          <span class="meta-tag">Group ID: #{{ g.id }}</span>
+          <span class="meta-tag" *ngIf="g.createdAt">Created: {{ g.createdAt | date:'mediumDate' }}</span>
+        </div>
+
+        <div class="group-admin-footer">
+          <button class="btn btn-outline btn-sm" (click)="openAssignUser(g.name)">
+            + Add Member
+          </button>
+          <button class="btn btn-primary btn-sm" [routerLink]="['/groups', g.id]">
+            View Group →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL: Create Group
+         ========================================================================= -->
+    <div class="modal-backdrop" *ngIf="showAddGroupModal" (click)="closeAddGroup()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>👥 Create New Group</h3>
+          <button class="btn-icon" (click)="closeAddGroup()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form (ngSubmit)="addGroup()">
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Group Name</label>
+              <input
+                type="text"
+                class="form-input"
+                placeholder="e.g. Goa Trip, Office Team"
+                [(ngModel)]="newGroup.name"
+                name="name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Description</label>
+              <input
+                type="text"
+                class="form-input"
+                placeholder="e.g. Shared expenses for project"
+                [(ngModel)]="newGroup.description"
+                name="description"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeAddGroup()">Cancel</button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="isCreating || !newGroup.name.trim()"
+            >
+              <span *ngIf="isCreating">Creating...</span>
+              <span *ngIf="!isCreating">Create Group</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL: Assign User to Group
+         ========================================================================= -->
+    <div class="modal-backdrop" *ngIf="showAssignUserModal" (click)="closeAssignUser()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>👤 Assign User to Group</h3>
+          <button class="btn-icon" (click)="closeAssignUser()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Select Group</label>
+            <select class="form-select" [(ngModel)]="selectedGroup" name="selectedGroup">
+              <option value="" disabled>-- Choose a group --</option>
+              <option *ngFor="let g of groups" [value]="g.name">
+                {{ g.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">User Email Address</label>
+            <input
+              type="email"
+              class="form-input"
+              placeholder="e.g. user@example.com"
+              [(ngModel)]="userEmail"
+              name="userEmail"
+              required
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeAssignUser()">Cancel</button>
+          <button
+            class="btn btn-primary"
+            [disabled]="isAssigning || !selectedGroup || !userEmail.trim()"
+            (click)="addUserToGroup(selectedGroup, userEmail)"
+          >
+            <span *ngIf="isAssigning">Assigning...</span>
+            <span *ngIf="!isAssigning">Assign to Group</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
-
-  <div class="form-group">
-    <label for="groupName">Select Group</label>
-    <select id="groupName" [(ngModel)]="selectedGroup" name="groupName">
-      <option value="" disabled selected>-- Choose a group --</option>
-      <option *ngFor="let group of groups" [value]="group.name">
-        {{ group.name }}
-      </option>
-    </select>
-  </div>
-
-  <button type="submit" (click)="addUserToGroup(selectedGroup, userEmail)" class="primary-btn">
-    Add User to Group
-  </button>
-</div>
+</app-shell>

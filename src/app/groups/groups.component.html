@@ -1,0 +1,220 @@
+<app-shell>
+  <div class="groups-page">
+    <!-- Header Row -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Groups</h1>
+        <p class="page-subtitle">Track shared balances and split expenses with friends and teams.</p>
+      </div>
+      <button class="btn btn-primary" (click)="openCreateGroup()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Create Group
+      </button>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="filter-bar">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="form-input search-filter-input"
+          placeholder="Search groups by name or description..."
+          [(ngModel)]="searchQuery"
+          (input)="applyFilter()"
+        />
+      </div>
+      <div class="groups-count-badge">
+        {{ filteredGroups.length }} {{ filteredGroups.length === 1 ? 'Group' : 'Groups' }}
+      </div>
+    </div>
+
+    <!-- Loading Skeleton -->
+    <div class="groups-grid" *ngIf="isLoading">
+      <div class="group-card-skeleton card" *ngFor="let i of [1,2,3,4,5,6]">
+        <div class="skeleton" style="height: 24px; width: 60%; margin-bottom: 12px;"></div>
+        <div class="skeleton" style="height: 16px; width: 40%; margin-bottom: 24px;"></div>
+        <div class="skeleton" style="height: 16px; width: 80%; margin-bottom: 8px;"></div>
+        <div class="skeleton" style="height: 36px; width: 100%; margin-top: auto;"></div>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && filteredGroups.length === 0">
+      <div class="empty-icon">👥</div>
+      <h3 class="empty-title">No groups found</h3>
+      <p class="empty-description">
+        {{ searchQuery ? 'No groups match your search query.' : 'Create your first group to start splitting expenses.' }}
+      </p>
+      <button class="btn btn-primary" (click)="openCreateGroup()">
+        + Create New Group
+      </button>
+    </div>
+
+    <!-- Groups Grid -->
+    <div class="groups-grid" *ngIf="!isLoading && filteredGroups.length > 0">
+      <div
+        class="group-card card card-interactive"
+        *ngFor="let g of filteredGroups"
+        (click)="openGroup(g.id)"
+      >
+        <div class="group-card-header">
+          <div class="group-title-row">
+            <span class="group-avatar-icon">{{ g.icon }}</span>
+            <div class="group-info">
+              <h3 class="group-card-name">{{ g.name }}</h3>
+              <p class="group-card-desc" *ngIf="g.description">{{ g.description }}</p>
+            </div>
+          </div>
+          <button
+            class="add-member-mini-btn"
+            (click)="openAddMember(g, $event)"
+            title="Add member to group"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <line x1="19" y1="8" x2="19" y2="14"></line>
+              <line x1="22" y1="11" x2="16" y2="11"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="group-card-stats">
+          <div class="stat-line">
+            <span class="stat-icon">👥</span>
+            <span class="stat-text"><strong>{{ g.memberCount }}</strong> members</span>
+          </div>
+          <div class="stat-line">
+            <span class="stat-icon">💰</span>
+            <span class="stat-text">
+              <strong>₹{{ g.totalSpend | number:'1.2-2' }}</strong> total expenses
+            </span>
+          </div>
+        </div>
+
+        <!-- Personal Standing in this Group -->
+        <div class="group-card-standing">
+          <span class="standing-label">Your Standing:</span>
+          <span class="standing-pill badge badge-emerald" *ngIf="g.userBalance > 0">
+            You are owed ₹{{ g.userBalance | number:'1.2-2' }}
+          </span>
+          <span class="standing-pill badge badge-rose" *ngIf="g.userBalance < 0">
+            You owe ₹{{ (g.userBalance * -1) | number:'1.2-2' }}
+          </span>
+          <span class="standing-pill badge badge-slate" *ngIf="g.userBalance === 0">
+            Settled up (₹0.00)
+          </span>
+        </div>
+
+        <div class="group-card-footer">
+          <span class="last-activity">{{ g.lastActivityText }}</span>
+          <span class="view-link">View Group →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL: Create New Group
+         ========================================================================= -->
+    <div class="modal-backdrop" *ngIf="showCreateGroupModal" (click)="closeCreateGroup()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>👥 Create New Group</h3>
+          <button class="btn-icon" (click)="closeCreateGroup()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Group Name</label>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="e.g. Goa Trip, Office Team, Apartment 402"
+              [(ngModel)]="newGroupName"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description (Optional)</label>
+            <input
+              type="text"
+              class="form-input"
+              placeholder="e.g. Shared expenses for our trip"
+              [(ngModel)]="newGroupDescription"
+            />
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeCreateGroup()">Cancel</button>
+          <button
+            class="btn btn-primary"
+            [disabled]="isCreating || !newGroupName.trim()"
+            (click)="submitCreateGroup()"
+          >
+            <span *ngIf="isCreating">Creating...</span>
+            <span *ngIf="!isCreating">Create Group</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL: Add Member to Group
+         ========================================================================= -->
+    <div class="modal-backdrop" *ngIf="showAddMemberModal" (click)="closeAddMember()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>➕ Add Member to {{ selectedGroupForMember?.name }}</h3>
+          <button class="btn-icon" (click)="closeAddMember()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Member Email</label>
+            <input
+              type="email"
+              class="form-input"
+              placeholder="Enter user email (e.g. jane.smith@gmail.com)"
+              [(ngModel)]="newMemberEmail"
+              required
+            />
+            <small class="text-muted" style="margin-top: 4px; font-size: 0.75rem;">
+              The user will be immediately linked to this group.
+            </small>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="closeAddMember()">Cancel</button>
+          <button
+            class="btn btn-primary"
+            [disabled]="isAddingMember || !newMemberEmail.trim()"
+            (click)="submitAddMember()"
+          >
+            <span *ngIf="isAddingMember">Adding...</span>
+            <span *ngIf="!isAddingMember">Add Member</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-shell>

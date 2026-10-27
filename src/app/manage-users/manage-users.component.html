@@ -1,23 +1,173 @@
+<app-shell>
+  <div class="manage-users-page">
+    <!-- Header -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Manage Users</h1>
+        <p class="page-subtitle">View and provision user accounts across the expense sharing system.</p>
+      </div>
+      <button class="btn btn-primary" (click)="openAddUser()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Create User
+      </button>
+    </div>
 
-<app-admin-nav></app-admin-nav>
-<div class="manage-users-container">
-  <!-- Top Nav -->
-  
-  <h2>👥 Manage Users</h2>
+    <!-- Filter & Search Bar -->
+    <div class="filter-bar">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="form-input search-input"
+          placeholder="Search by username or email..."
+          [(ngModel)]="searchQuery"
+          (input)="applyFilter()"
+        />
+      </div>
+      <span class="badge badge-slate">{{ filteredUsers.length }} registered</span>
+    </div>
 
-  <!-- Add User Form -->
-  <form (ngSubmit)="addUser()" class="user-form">
-    <input [(ngModel)]="newUser.username" placeholder="Username" name="username" required />
-    <input [(ngModel)]="newUser.email" placeholder="Email" name="email" type="email" required />
-    <input [(ngModel)]="newUser.password" placeholder="Password" type="password" name="password" required />
-    <button type="submit">➕ Create User</button>
-  </form>
+    <!-- Loading Skeleton -->
+    <div class="card" *ngIf="isLoading" style="padding: 2rem;">
+      <div class="skeleton" style="height: 24px; width: 40%; margin-bottom: 1rem;"></div>
+      <div class="skeleton" style="height: 48px; width: 100%; margin-bottom: 0.5rem;" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
 
-  <!-- User List -->
-  <ul class="user-list">
-    <li *ngFor="let u of users">
-      <span class="user-info">{{ u.username }} — {{ u.email }}</span>
-      <p>{{ u.groups.join(', ') }}</p>
-    </li>
-  </ul>
-</div>
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && filteredUsers.length === 0">
+      <div class="empty-icon">👥</div>
+      <h3 class="empty-title">No users found</h3>
+      <p class="empty-description">Try adjusting your search criteria or register a new user.</p>
+      <button class="btn btn-primary" (click)="openAddUser()">
+        + Register User
+      </button>
+    </div>
+
+    <!-- Users Table Card -->
+    <div class="card users-table-card" *ngIf="!isLoading && filteredUsers.length > 0">
+      <div class="table-container">
+        <table class="modern-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+              <th>Assigned Groups</th>
+              <th>Account ID</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let u of filteredUsers">
+              <td>
+                <div class="user-cell">
+                  <div class="avatar-circle">
+                    {{ getUserInitials(u.username) }}
+                  </div>
+                  <span class="username-text">{{ u.username }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="email-text">{{ u.email }}</span>
+              </td>
+              <td>
+                <div class="groups-tag-list" *ngIf="u.groups && u.groups.length > 0">
+                  <span class="group-tag-pill" *ngFor="let grp of u.groups">
+                    {{ grp }}
+                  </span>
+                </div>
+                <span class="text-muted" *ngIf="!u.groups || u.groups.length === 0" style="font-size: 0.8125rem;">
+                  No groups yet
+                </span>
+              </td>
+              <td>
+                <span class="id-badge">#{{ u.id }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- =========================================================================
+         MODAL: Add User
+         ========================================================================= -->
+    <div class="modal-backdrop" *ngIf="showAddUserModal" (click)="closeAddUser()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h3>👤 Create New User</h3>
+          <button class="btn-icon" (click)="closeAddUser()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form (ngSubmit)="addUser()">
+          <div class="modal-body">
+            <div class="form-group">
+              <label class="form-label">Username</label>
+              <input
+                type="text"
+                class="form-input"
+                placeholder="e.g. Alex Rivera"
+                [(ngModel)]="newUser.username"
+                name="username"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input
+                type="email"
+                class="form-input"
+                placeholder="alex@example.com"
+                [(ngModel)]="newUser.email"
+                name="email"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Password</label>
+              <input
+                type="password"
+                class="form-input"
+                placeholder="At least 6 characters"
+                [(ngModel)]="newUser.password"
+                name="password"
+                required
+                minlength="6"
+              />
+            </div>
+
+            <div class="checkbox-row" style="margin-top: 1rem;">
+              <label class="custom-checkbox">
+                <input type="checkbox" [(ngModel)]="newUser.isAdmin" name="isAdmin" />
+                <span>Grant Administrator Privileges</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" (click)="closeAddUser()">Cancel</button>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              [disabled]="isSubmitting || !newUser.username || !newUser.email || !newUser.password"
+            >
+              <span *ngIf="isSubmitting">Creating...</span>
+              <span *ngIf="!isSubmitting">Create User</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</app-shell>

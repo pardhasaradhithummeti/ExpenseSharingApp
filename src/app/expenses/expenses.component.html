@@ -1,0 +1,134 @@
+<app-shell>
+  <div class="expenses-page">
+    <!-- Header Row -->
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Expenses</h1>
+        <p class="page-subtitle">A unified feed of all shared expenses across your active groups.</p>
+      </div>
+      <button class="btn btn-primary" (click)="openAddExpense()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Add Expense
+      </button>
+    </div>
+
+    <!-- Quick Financial Highlights -->
+    <div class="summary-cards-row" *ngIf="!isLoading">
+      <div class="summary-card card">
+        <span class="summary-label">Total Group Spend</span>
+        <span class="summary-val">₹{{ totalSpent | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-card card">
+        <span class="summary-label">You Lent Out</span>
+        <span class="summary-val text-receive">+₹{{ totalYouLent | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-card card">
+        <span class="summary-label">Your Consumed Share</span>
+        <span class="summary-val text-owe">-₹{{ totalYourShare | number:'1.2-2' }}</span>
+      </div>
+    </div>
+
+    <!-- Filter & Search Controls -->
+    <div class="filter-controls-row">
+      <div class="search-input-wrapper">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          type="text"
+          class="form-input search-input"
+          placeholder="Filter by description, group, or payer..."
+          [(ngModel)]="searchQuery"
+          (input)="applyFilter()"
+        />
+      </div>
+
+      <div class="group-filter-wrapper">
+        <label class="filter-label">Group:</label>
+        <select
+          class="form-select filter-select"
+          [(ngModel)]="selectedFilterGroupId"
+          (change)="applyFilter()"
+        >
+          <option value="all">All Groups</option>
+          <option *ngFor="let g of userGroups" [value]="g.id">
+            {{ g.name }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Skeleton Loading -->
+    <div class="card" *ngIf="isLoading" style="padding: 2rem;">
+      <div class="skeleton" style="height: 24px; width: 40%; margin-bottom: 1rem;"></div>
+      <div class="skeleton" style="height: 48px; width: 100%; margin-bottom: 0.5rem;" *ngFor="let i of [1,2,3,4]"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && filteredExpenses.length === 0">
+      <div class="empty-icon">💸</div>
+      <h3 class="empty-title">No expenses found</h3>
+      <p class="empty-description">
+        {{ searchQuery || selectedFilterGroupId !== 'all' ? 'No expenses match the selected filters.' : 'You haven’t added any expenses yet.' }}
+      </p>
+      <button class="btn btn-primary" (click)="openAddExpense()">
+        + Add Expense
+      </button>
+    </div>
+
+    <!-- Expenses Table Card -->
+    <div class="card expenses-feed-card" *ngIf="!isLoading && filteredExpenses.length > 0">
+      <div class="feed-header">
+        <span class="feed-title">All Transactions</span>
+        <span class="badge badge-slate">{{ filteredExpenses.length }} Expenses</span>
+      </div>
+
+      <div class="expense-feed-list">
+        <div class="expense-feed-item" *ngFor="let exp of filteredExpenses">
+          <!-- Icon -->
+          <div class="expense-cat-icon">
+            {{ exp.icon }}
+          </div>
+
+          <!-- Description & Details -->
+          <div class="expense-details">
+            <span class="expense-title-text">{{ exp.description }}</span>
+            <div class="expense-sub-meta">
+              <a [routerLink]="['/groups', exp.groupId]" class="group-link">
+                {{ exp.groupName }}
+              </a>
+              <span class="meta-dot">•</span>
+              <span class="payer-text">
+                Paid by <strong>{{ exp.payerName }}</strong>
+              </span>
+              <span class="meta-dot">•</span>
+              <span class="date-text">{{ exp.createdAt | date:'mediumDate' }}</span>
+            </div>
+          </div>
+
+          <!-- Your Share Column -->
+          <div class="expense-your-share">
+            <span class="share-label">Your Share</span>
+            <span class="share-val">₹{{ exp.userShare | number:'1.2-2' }}</span>
+          </div>
+
+          <!-- Status Badge -->
+          <div class="expense-status-badge">
+            <span class="badge badge-emerald" *ngIf="exp.isPayer">You Paid</span>
+            <span class="badge badge-rose" *ngIf="!exp.isPayer">You Borrowed</span>
+          </div>
+
+          <!-- Total Amount -->
+          <div class="expense-total-col">
+            <span class="total-label">Total</span>
+            <span class="total-val">₹{{ exp.amount | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</app-shell>
